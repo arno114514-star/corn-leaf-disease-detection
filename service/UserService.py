@@ -44,3 +44,38 @@ def login(username,password):
                 'status':500,
                 "msg":"密码错误，登录失败"
             }
+
+def register(username,password):
+    """
+        注册流程：
+            1.校验用户名和密码非空
+            2.查询用户名是否已存在，已存在则返回注册失败
+            3.不存在则插入新用户，返回注册成功
+    """
+    # 简单的非空校验
+    if username is None or username=="" or password is None or password=="":
+        return{
+            'status':500,
+            "msg":"用户名或密码不能为空"
+        }
+    conn=MySQLUtil.connect()
+    cur=conn.cursor()
+    # 先查用户名是否已存在
+    sql="select * from `users` where username=%s;"
+    cur.execute(sql,(username,))
+    result=cur.fetchone()
+    if result is not None:
+        MySQLUtil.close(conn,cur)
+        return{
+            'status':500,
+            "msg":"用户名已存在"
+        }
+    # 插入新用户
+    sql="insert into `users`(username,password) values(%s,%s);"
+    cur.execute(sql,(username,password))
+    conn.commit()
+    MySQLUtil.close(conn,cur)
+    return{
+        'status':200,
+        "msg":"注册成功"
+    }

@@ -21,6 +21,9 @@ def go_a(request):
 def go_login(request):
     return render(request,"login.html")
 
+def go_register(request):
+    return render(request,"register.html")
+
 def go_system(request):
     return render(request,"system.html")
 

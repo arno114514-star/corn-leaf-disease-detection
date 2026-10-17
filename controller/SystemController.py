@@ -10,6 +10,14 @@ def login(request):
     print("密码",password)
     return JsonResponse(UserService.login(username,password))
 
+def register(request):
+    print("准备注册账号")
+    username = request.GET.get("username")
+    password = request.GET.get("password")
+    print("用户名：",username)
+    print("密码",password)
+    return JsonResponse(UserService.register(username,password))
+
 def img_detect(request):
     """
        Django

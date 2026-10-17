@@ -157,3 +157,20 @@ button:hover {
 button:active {
     background: #237804;
 }
+
+/* ===== 底部跳转链接（去注册 / 去登录） ===== */
+.link-row {
+    width: 100%;
+    text-align: center;
+    font-size: 13px;
+    color: #8c8c8c;
+    margin-top: 16px;
+}
+.link-row a {
+    color: #52c41a;
+    cursor: pointer;
+    margin-left: 4px;
+}
+.link-row a:hover {
+    color: #389e0d;
+}

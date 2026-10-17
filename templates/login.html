@@ -42,6 +42,11 @@
 
         <!-- 登录按钮 -->
         <button @click="login">登 录</button>
+
+        <!-- 去注册链接 -->
+        <div class="link-row">
+            还没有账号？<a @click="goRegister">去注册</a>
+        </div>
     </section>
 </body>
 <script>
@@ -80,6 +85,10 @@
                 }).catch(err => {
                     this.$message.error('网络请求失败，请检查服务是否启动');
                 })
+            },
+            goRegister() {
+                const baseUrl = window.location.origin;
+                window.location.href = baseUrl + '/goRegister/';
             }
         }
     })

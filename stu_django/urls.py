@@ -33,6 +33,8 @@ urlpatterns = [
     path("goDetectImg/",pc.go_imDetect),
     #
     path("login/",sc.login),
+    path("register/",sc.register),
+    path("goRegister/",pc.go_register),
     path("imgDetect/",sc.img_detect),
 ]
 if settings.DEBUG:

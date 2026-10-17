@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>玉米叶病害检测系统 - 注册</title>
+    <link rel="icon" href="../static/images/icon/users-solid-full.svg" type="image/png">
+    <!-- Element UI 样式 -->
+    <link rel="stylesheet" href="../static/element-ui/lib/theme-chalk/index.css">
+    <!-- Vue / Axios / Element UI -->
+    <script src="../static/js/vue.js"></script>
+    <script src="../static/axios/dist/axios.js"></script>
+    <script src="../static/element-ui/lib/index.js"></script>
+    <!-- 复用登录页样式 -->
+    <link rel="stylesheet" href="../static/css/login.css">
+    <style>
+        /* 注册页专属：底部跳转链接 */
+        .link-row {
+            width: 100%;
+            text-align: center;
+            font-size: 13px;
+            color: #8c8c8c;
+            margin-top: 16px;
+        }
+        .link-row a {
+            color: #52c41a;
+            cursor: pointer;
+            margin-left: 4px;
+        }
+        .link-row a:hover {
+            color: #389e0d;
+        }
+    </style>
+</head>
+<body>
+    <section id="app">
+        <!-- 顶部 Logo -->
+        <div class="logo">
+            <i class="el-icon-monitor"></i>
+        </div>
+        <h1>玉米叶病害检测系统</h1>
+        <p class="subtitle">用户注册</p>
+
+        <!-- 用户名输入框 -->
+        <div class="input-wrap">
+            <i class="el-icon-user"></i>
+            <input type="text" placeholder="请输入用户名" v-model="username" spellcheck="false">
+        </div>
+        <!-- 密码输入框 -->
+        <div class="input-wrap">
+            <i class="el-icon-lock"></i>
+            <input type="password" placeholder="请输入密码" v-model="password" spellcheck="false">
+        </div>
+        <!-- 确认密码输入框 -->
+        <div class="input-wrap">
+            <i class="el-icon-lock"></i>
+            <input type="password" placeholder="请再次输入密码" v-model="confirmPassword" spellcheck="false">
+        </div>
+
+        <!-- 注册按钮 -->
+        <button @click="register">注 册</button>
+
+        <!-- 去登录链接 -->
+        <div class="link-row">
+            已有账号？<a @click="goLogin">去登录</a>
+        </div>
+    </section>
+</body>
+<script>
+    // 创建 Vue 实例，挂载到 #app 上
+    new Vue({
+        el: '#app',
+        data() {
+            return {
+                username: '',
+                password: '',
+                confirmPassword: ''
+            }
+        },
+        methods: {
+            register() {
+                // 前端非空校验
+                if (this.username === '' || this.password === '') {
+                    this.$message.warning('用户名和密码不能为空');
+                    return;
+                }
+                // 两次密码一致性校验
+                if (this.password !== this.confirmPassword) {
+                    this.$message.warning('两次输入的密码不一致');
+                    return;
+                }
+                // 获取当前站点根地址
+                const baseUrl = window.location.origin;
+                axios({
+                    url: baseUrl + '/register/',
+                    method: 'get',
+                    params: {
+                        username: this.username,
+                        password: this.password
+                    }
+                }).then(res => {
+                    let status = res.data.status;
+                    let msg = res.data.msg;
+                    if (status === 200) {
+                        this.$message({
+                            message: msg,
+                            type: 'success'
+                        });
+                        // 注册成功后跳回登录页，用新账号登录
+                        setTimeout(() => {
+                            window.location.href = baseUrl + '/';
+                        }, 1000);
+                    } else {
+                        this.$message.warning(msg);
+                    }
+                }).catch(err => {
+                    this.$message.error('网络请求失败，请检查服务是否启动');
+                })
+            },
+            goLogin() {
+                const baseUrl = window.location.origin;
+                window.location.href = baseUrl + '/';
+            }
+        }
+    })
+</script>
+</html>
