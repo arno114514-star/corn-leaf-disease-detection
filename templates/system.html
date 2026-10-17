@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>玉米叶病害检测系统</title>
+    <!-- Element UI 样式 -->
+    <link rel="stylesheet" href="../static/element-ui/lib/theme-chalk/index.css">
+    <!-- Vue / Axios / Element UI -->
+    <script src="../static/js/vue.js"></script>
+    <script src="../static/axios/dist/axios.js"></script>
+    <script src="../static/element-ui/lib/index.js"></script>
+    <style>
+        /* ===== 全局 ===== */
+        html, body {
+            height: 100%;
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+                         "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+        }
+        #app, .container {
+            height: 100%;
+        }
+
+        /* ===== 顶部导航栏：白底 + 底部细线 ===== */
+        .el-header {
+            background-color: #ffffff;
+            border-bottom: 1px solid #e8e8e8;
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            box-shadow: none;
+        }
+        .header-logo {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            background: #52c41a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-right: 12px;
+        }
+        .header-logo i {
+            color: #ffffff;
+            font-size: 16px;
+        }
+        .header-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1f1f1f;
+        }
+
+        /* ===== 左侧菜单：白底 + 右侧细线 ===== */
+        .el-aside {
+            background-color: #ffffff;
+            border-right: 1px solid #e8e8e8;
+        }
+        .el-menu {
+            border-right: none !important;
+        }
+        /* 菜单项选中态：浅绿背景 + 左侧绿色竖条 */
+        .el-menu-item.is-active {
+            background-color: #f6ffed !important;
+            color: #52c41a !important;
+            font-weight: 500;
+        }
+        .el-menu-item.is-active::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: #52c41a;
+        }
+        .el-menu-item {
+            position: relative;
+        }
+        .el-menu-item:hover {
+            background-color: #fafafa !important;
+        }
+
+        /* ===== 主内容区：浅灰底，去掉背景图 ===== */
+        .el-main {
+            padding: 0;
+            background-color: #f5f7fa;
+        }
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+    </style>
+</head>
+
+<body>
+<div id="app">
+    <el-container class="container">
+        <!-- 顶部导航栏 -->
+        <el-header height="64px">
+            <div class="header-logo">
+                <i class="el-icon-monitor"></i>
+            </div>
+            <span class="header-title">玉米叶病害检测系统</span>
+        </el-header>
+        <el-container>
+            <!-- 左侧菜单 -->
+            <el-aside width="220px">
+                <el-menu
+                        :default-active="activeMenu"
+                        background-color="#ffffff"
+                        text-color="#595959"
+                        active-text-color="#52c41a"
+                        @select="handleMenuSelect">
+                    <el-menu-item index="1">
+                        <i class="el-icon-picture"></i>
+                        <span slot="title">图像检测</span>
+                    </el-menu-item>
+                </el-menu>
+            </el-aside>
+            <!-- 主内容区 -->
+            <el-main>
+                <iframe :src="iframeSrc"></iframe>
+            </el-main>
+        </el-container>
+    </el-container>
+</div>
+
+<script>
+    new Vue({
+        el: '#app',
+        data() {
+            return {
+                activeMenu: '1',
+                iframeSrc: ''
+            }
+        },
+        methods: {
+            handleMenuSelect(index) {
+                this.activeMenu = index
+                const baseUrl = window.location.origin
+                if (index === '1') {
+                    this.iframeSrc = baseUrl + '/goImgDetect/'
+                }
+            }
+        },
+        mounted() {
+            this.handleMenuSelect('1')
+        }
+    })
+</script>
+</body>
+</html>

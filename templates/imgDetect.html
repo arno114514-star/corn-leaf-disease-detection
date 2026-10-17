@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>图像病害检测</title>
+    <!-- Element UI 样式 -->
+    <link rel="stylesheet" href="../static/element-ui/lib/theme-chalk/index.css">
+    <!-- Vue / Axios / Element UI -->
+    <script src="../static/js/vue.js"></script>
+    <script src="../static/axios/dist/axios.js"></script>
+    <script src="../static/element-ui/lib/index.js"></script>
+    <style>
+        /* ===== 页面整体：浅灰底 + 留白 ===== */
+        body {
+            margin: 0;
+            background-color: #f5f7fa;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+                         "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+        }
+        .page {
+            padding: 24px;
+        }
+        .page-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1f1f1f;
+            margin: 0 0 20px;
+        }
+
+        /* ===== 通用卡片 ===== */
+        .card {
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        .card-head {
+            padding: 14px 20px;
+            font-size: 15px;
+            font-weight: 500;
+            color: #1f1f1f;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+        }
+        .card-head .dot {
+            width: 4px;
+            height: 14px;
+            background: #52c41a;
+            border-radius: 2px;
+            margin-right: 8px;
+        }
+        .card-body {
+            padding: 20px;
+        }
+
+        /* ===== 上传区域 ===== */
+        .upload-card .card-body {
+            display: flex;
+            align-items: center;
+        }
+        .upload-tip {
+            margin-left: 16px;
+            font-size: 13px;
+            color: #8c8c8c;
+        }
+
+        /* ===== 图片对比区 ===== */
+        .img-compare {
+            display: flex;
+            gap: 20px;
+        }
+        .img-card {
+            flex: 1;
+            margin-bottom: 20px;
+        }
+        .img-box {
+            min-height: 280px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            background: #fafafa;
+        }
+        .img-box img {
+            max-width: 100%;
+            max-height: 360px;
+            border-radius: 4px;
+            object-fit: contain;
+        }
+        .placeholder {
+            color: #bfbfbf;
+            font-size: 14px;
+            text-align: center;
+        }
+        .placeholder i {
+            font-size: 40px;
+            display: block;
+            margin-bottom: 8px;
+            color: #d9d9d9;
+        }
+
+        /* ===== 检测结果表格 ===== */
+        .result-card .card-body {
+            padding: 0;
+        }
+        .conf-tag {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        .conf-high {
+            background: #f6ffed;
+            color: #52c41a;
+            border: 1px solid #b7eb8f;
+        }
+        .conf-mid {
+            background: #fff7e6;
+            color: #fa8c16;
+            border: 1px solid #ffd591;
+        }
+        .conf-low {
+            background: #fff1f0;
+            color: #f5222d;
+            border: 1px solid #ffa39e;
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div class="page">
+        <h2 class="page-title">图像病害检测</h2>
+
+        <!-- 上传区域 -->
+        <div class="card upload-card">
+            <div class="card-head"><span class="dot"></span>上传图片</div>
+            <div class="card-body">
+                <el-upload
+                        ref="upload"
+                        action=""
+                        :on-change="onChange"
+                        :on-preview="handlePreview"
+                        :on-remove="handleRemove"
+                        :file-list="fileList"
+                        :auto-upload="false"
+                        :limit="1"
+                        accept="image/jpeg,image/png,image/jpg">
+                    <el-button slot="trigger" size="small" type="primary" icon="el-icon-upload2">选取文件</el-button>
+                    <el-button style="margin-left: 10px;" size="small" type="success" icon="el-icon-search" @click="submitUpload">执行检测</el-button>
+                </el-upload>
+                <span class="upload-tip">支持 JPG / PNG 格式，建议不超过 500KB</span>
+            </div>
+        </div>
+
+        <!-- 图片对比区 -->
+        <div class="img-compare">
+            <!-- 原始图像 -->
+            <div class="card img-card">
+                <div class="card-head"><span class="dot"></span>原始图像</div>
+                <div class="img-box">
+                    <img v-if="showImgUrl" :src="showImgUrl" alt="原始图像">
+                    <div v-else class="placeholder">
+                        <i class="el-icon-picture-outline"></i>
+                        请先选取图片
+                    </div>
+                </div>
+            </div>
+            <!-- 检测结果 -->
+            <div class="card img-card">
+                <div class="card-head"><span class="dot"></span>检测结果</div>
+                <div class="img-box">
+                    <img v-if="detectImgUrl" :src="detectImgUrl" alt="检测结果" @error="handleImageError">
+                    <div v-else class="placeholder">
+                        <i class="el-icon-view"></i>
+                        {{ detecting ? '检测中，请稍候...' : '尚未执行检测' }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 检测结果表格 -->
+        <div class="card result-card" v-if="resultList.length > 0">
+            <div class="card-head"><span class="dot"></span>检测到的病害（共 {{ resultList.length }} 项）</div>
+            <div class="card-body">
+                <el-table :data="resultList" stripe style="width: 100%;">
+                    <el-table-column type="index" label="序号" width="80" align="center"></el-table-column>
+                    <el-table-column prop="cls_name" label="病害类型" align="center"></el-table-column>
+                    <el-table-column label="置信度" align="center">
+                        <template slot-scope="scope">
+                            <span class="conf-tag" :class="confClass(scope.row.conf)">
+                                {{ (scope.row.conf * 100).toFixed(0) }}%
+                            </span>
+                        </template>
+                    </el-table-column>
+                    <el-table-column label="置信度详情" align="center">
+                        <template slot-scope="scope">
+                            <el-progress
+                                    :percentage="Number((scope.row.conf * 100).toFixed(1))"
+                                    :color="progressColor(scope.row.conf)"
+                                    :stroke-width="8"></el-progress>
+                        </template>
+                    </el-table-column>
+                </el-table>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+<script>
+    new Vue({
+        el: '#app',
+        data() {
+            return {
+                fileList: [],
+                showImgUrl: '',
+                detectImgUrl: '',
+                resultList: [],
+                detecting: false
+            };
+        },
+        methods: {
+            // 置信度对应的样式等级
+            confClass(conf) {
+                if (conf >= 0.7) return 'conf-high';
+                if (conf >= 0.4) return 'conf-mid';
+                return 'conf-low';
+            },
+            // 进度条颜色
+            progressColor(conf) {
+                if (conf >= 0.7) return '#52c41a';
+                if (conf >= 0.4) return '#fa8c16';
+                return '#f5222d';
+            },
+            // 执行检测
+            submitUpload() {
+                if (this.fileList.length === 0) {
+                    this.$message.warning('请先选取要检测的图片');
+                    return;
+                }
+                this.detecting = true;
+                this.resultList = [];
+                let file = this.fileList[0].raw;
+                let formData = new FormData();
+                formData.append('file', file);
+                const baseUrl = window.location.origin;
+                axios({
+                    url: baseUrl + '/imgDetect/',
+                    method: 'post',
+                    data: formData
+                }).then(res => {
+                    this.detecting = false;
+                    let status = res.data.status;
+                    let msg = res.data.msg;
+                    if (status === 200) {
+                        this.$message.success(msg);
+                        let resultPath = res.data.data.resultImgUrl;
+                        resultPath = resultPath.replace(/^\/+/, '');
+                        this.detectImgUrl = baseUrl + "/media/" + resultPath;
+                        // 保存检测结果列表
+                        this.resultList = res.data.data.resultList || [];
+                    } else {
+                        this.$message.error(msg);
+                    }
+                }).catch(err => {
+                    this.detecting = false;
+                    this.$message.error('检测失败，请检查网络或服务状态');
+                })
+            },
+            // 文件选择变化
+            onChange(file, fileList) {
+                this.fileList = [];
+                this.fileList.push(file);
+                // 选择新文件时清空上一次的检测结果
+                this.detectImgUrl = '';
+                this.resultList = [];
+                this.showImg();
+            },
+            // 预览选中的图片
+            showImg() {
+                let file = this.fileList[0].raw;
+                let reader = new FileReader();
+                reader.onload = (e) => {
+                    this.showImgUrl = e.target.result;
+                }
+                reader.readAsDataURL(file);
+            },
+            handleRemove(file, fileList) {
+                this.showImgUrl = '';
+                this.detectImgUrl = '';
+                this.resultList = [];
+            },
+            handlePreview(file) {
+            },
+            // 图片加载错误处理
+            handleImageError(e) {
+                if (this.detectImgUrl) {
+                    this.$message.error('检测结果图片加载失败');
+                }
+            }
+        }
+    })
+</script>
+</html>

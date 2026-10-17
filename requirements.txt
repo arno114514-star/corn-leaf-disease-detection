@@ -1,0 +1,14 @@
+# Django Web 框架（项目基于 6.0.5 开发）
+Django==6.0.5
+
+# 跨域支持（settings.py 中 INSTALLED_APPS 使用了 corsheaders）
+django-cors-headers
+
+# YOLO 目标检测模型（会自动安装 torch 等依赖）
+ultralytics
+
+# MySQL 连接驱动（util/MySQLUtil.py、test.py 使用）
+pymysql
+
+# 图像处理库（ultralytics 依赖，显式声明便于环境复现）
+pillow

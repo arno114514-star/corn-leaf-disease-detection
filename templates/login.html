@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>玉米叶病害检测系统 - 登录</title>
+    <link rel="icon" href="../static/images/icon/users-solid-full.svg" type="image/png">
+    <!-- Element UI 样式 -->
+    <link rel="stylesheet" href="../static/element-ui/lib/theme-chalk/index.css">
+    <!-- Vue / Axios / Element UI -->
+    <script src="../static/js/vue.js"></script>
+    <script src="../static/axios/dist/axios.js"></script>
+    <script src="../static/element-ui/lib/index.js"></script>
+    <!-- 自定义样式 -->
+    <link rel="stylesheet" href="../static/css/login.css">
+</head>
+<body>
+    <section id="app">
+        <!-- 顶部 Logo -->
+        <div class="logo">
+            <i class="el-icon-monitor"></i>
+        </div>
+        <h1>玉米叶病害检测系统</h1>
+        <p class="subtitle">用户登录</p>
+
+        <!-- 用户名输入框 -->
+        <div class="input-wrap in-1">
+            <i class="el-icon-user"></i>
+            <input type="text" placeholder="请输入用户名" v-model="username" spellcheck="false">
+        </div>
+        <!-- 密码输入框 -->
+        <div class="input-wrap in-2">
+            <i class="el-icon-lock"></i>
+            <input type="password" placeholder="请输入密码" v-model="password" spellcheck="false">
+        </div>
+
+        <!-- 记住我 / 忘记密码 -->
+        <div class="remember">
+            <label><input type="checkbox"> 记住我</label>
+            <a>忘记密码？</a>
+        </div>
+
+        <!-- 登录按钮 -->
+        <button @click="login">登 录</button>
+    </section>
+</body>
+<script>
+    // 创建 Vue 实例，挂载到 #app 上
+    new Vue({
+        el: '#app',
+        data() {
+            return {
+                username: '',
+                password: ''
+            }
+        },
+        methods: {
+            login() {
+                // 获取当前站点根地址（避免写死 localhost）
+                const baseUrl = window.location.origin;
+                axios({
+                    url: baseUrl + '/login/',
+                    method: 'get',
+                    params: {
+                        username: this.username,
+                        password: this.password
+                    }
+                }).then(res => {
+                    let status = res.data.status;
+                    let msg = res.data.msg;
+                    if (status === 200) {
+                        this.$message({
+                            message: msg,
+                            type: 'success'
+                        });
+                        window.location.href = baseUrl + '/goSystem/';
+                    } else {
+                        this.$message.warning(msg);
+                    }
+                }).catch(err => {
+                    this.$message.error('网络请求失败，请检查服务是否启动');
+                })
+            }
+        }
+    })
+</script>
+</html>
